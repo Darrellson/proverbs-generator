@@ -1,5 +1,5 @@
-import axios from 'axios';
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 type AuthFormProps = {
@@ -14,6 +14,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const url = `http://localhost:5000/auth/${isRegistering ? 'register' : 'login'}`;
+
     try {
       const response = await axios.post(url, { email, password });
       if (response.data.token) {
