@@ -10,6 +10,7 @@ const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
   return token ? children : <Navigate to="/" />;
 };
 
+
 const App: React.FC = () => {
   return (
     <AuthProvider>

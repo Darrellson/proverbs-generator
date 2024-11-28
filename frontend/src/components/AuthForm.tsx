@@ -1,24 +1,28 @@
-import React, { useState } from 'react';
 import axios from 'axios';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-type AuthFormProps = {
+interface AuthFormProps {
   isRegistering: boolean;
-};
+}
 
 const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { setToken } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const url = `http://localhost:5000/auth/${isRegistering ? 'register' : 'login'}`;
-
     try {
       const response = await axios.post(url, { email, password });
       if (response.data.token) {
         setToken(response.data.token);
+        navigate('/proverbs'); // Redirect to the proverbs page after login
+      } else {
+        alert('Invalid credentials');
       }
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {

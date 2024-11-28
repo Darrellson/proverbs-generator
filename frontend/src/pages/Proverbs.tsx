@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
-const Proverbs = () => {
+const Proverbs: React.FC = () => {
   const [proverb, setProverb] = useState('');
   const { token } = useAuth();
 
@@ -17,8 +17,8 @@ const Proverbs = () => {
 
   return (
     <div className="container mt-5">
-      <h1 className="text-center">Georgian Proverbs</h1>
-      <p className="text-center">{proverb}</p>
+      <h1 className="text-center">Random Georgian Proverb</h1>
+      <p className="text-center fs-4">{proverb}</p>
     </div>
   );
 };
