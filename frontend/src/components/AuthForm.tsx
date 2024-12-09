@@ -12,15 +12,22 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const [password, setPassword] = useState('');
   const { setToken } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  // Use the environment variable for the API URL
+  const API_URL = import.meta.env.VITE_API_URL; // Vite environment variable
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const url = `http://localhost:5000/auth/${isRegistering ? 'register' : 'login'}`;
+    setLoading(true);
+    
+    const url = `${API_URL}/auth/${isRegistering ? 'register' : 'login'}`;
+    
     try {
       const response = await axios.post(url, { email, password });
       if (response.data.token) {
-        setToken(response.data.token);
-        navigate('/proverbs'); // Redirect to the proverbs page after login
+        setToken(response.data.token); // Save the token
+        navigate('/proverbs'); // Redirect to the proverbs page after successful login/registration
       } else {
         alert('Invalid credentials');
       }
@@ -30,6 +37,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
       } else {
         alert('Error: Something went wrong');
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,8 +66,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary w-100">
-          {isRegistering ? 'Register' : 'Login'}
+        <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+          {loading ? 'Processing...' : isRegistering ? 'Register' : 'Login'}
         </button>
       </form>
     </div>

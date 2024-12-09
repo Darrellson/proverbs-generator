@@ -6,14 +6,19 @@ const Proverbs: React.FC = () => {
   const [proverb, setProverb] = useState('');
   const { token } = useAuth();
 
+  // Use the environment variable for the API URL
+  const API_URL = import.meta.env.VITE_API_URL; // Vite environment variable
+
   useEffect(() => {
     if (token) {
       axios
-        .get('http://localhost:5000/proverbs', { headers: { Authorization: token } })
+        .get(`${API_URL}/proverbs`, {
+          headers: { Authorization: token }, // Sending the token for authentication
+        })
         .then((res) => setProverb(res.data.combined))
         .catch(() => setProverb('Error loading proverbs.'));
     }
-  }, [token]);
+  }, [token, API_URL]);
 
   return (
     <div className="container mt-5">
