@@ -14,9 +14,10 @@ app.use(bodyParser.json());
 app.use('/auth', authRoutes);
 app.use('/proverbs', proverbRoutes);
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
-
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 app.use(
   cors({
