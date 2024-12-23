@@ -54,15 +54,15 @@ const proverbs =[
     "არ უნდა გქონდეს სიცარიელე, თუ გინდა ყველაზე უკეთესიდან."
   ];
 
-router.get('/', (req, res) => {
-  const firstProverb = proverbs[Math.floor(Math.random() * proverbs.length)];
-  const secondProverb = proverbs[Math.floor(Math.random() * proverbs.length)];
-
-  const firstPart = firstProverb.split(',')[0];
-  const secondPart = secondProverb.split(',').slice(1).join(',');
-
-  const combined = `${firstPart},${secondPart}`;
-  res.json({ combined });
-});
-
+  router.get('/', (req, res) => {
+    const firstProverb = proverbs[Math.floor(Math.random() * proverbs.length)];
+    const secondProverb = proverbs[Math.floor(Math.random() * proverbs.length)];
+  
+    const secondPart = firstProverb.split(',').slice(1).join(',');
+    const firstPart = secondProverb.split(',')[0];
+  
+    const combined = `${firstPart},${secondPart}`;
+    res.json({ combined });
+  });
+  
 module.exports = router;
