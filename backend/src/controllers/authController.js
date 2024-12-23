@@ -5,36 +5,56 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
 
-
-const hardcodedCredentials = {
-  email: 'user@example.com',
-  password: 'password123',
-};
-
 exports.register = async (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required.' });
+  }
+
   const hashedPassword = await bcrypt.hash(password, 10);
+
   try {
-    const user = await prisma.user.create({ data: { email, password: hashedPassword } });
-    res.json({ user });
+    await prisma.user.create({
+      data: { email, password: hashedPassword },
+    });
+    res.status(201).json({ message: 'User registered successfully.' });
   } catch (err) {
-    res.status(400).json({ error: 'User already exists.' });
+    res.status(400).json({ error: 'User already exists or invalid data.' });
   }
 };
 
-// Login function to authenticate the user
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
-  // Check if the email and password match the hardcoded credentials
-  if (email === hardcodedCredentials.email && password === hardcodedCredentials.password) {
-    // Generate a JWT token (with a simple payload)
-    const token = jwt.sign({ email }, 'your_jwt_secret', { expiresIn: '1h' });
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) return res.status(401).json({ error: 'Invalid email or password.' });
 
-    // Return the token on successful authentication
-    return res.status(200).json({ token });
-  } else {
-    // Return error if credentials don't match
-    return res.status(401).json({ error: 'Invalid email or password' });
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) return res.status(401).json({ error: 'Invalid email or password.' });
+
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1h' });
+
+    // Send JWT as httpOnly cookie
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 3600000, // 1 hour
+    });
+
+    res.status(200).json({ message: 'Login successful.' });
+  } catch (err) {
+    res.status(500).json({ error: 'Something went wrong.' });
   }
+};
+
+exports.logout = (req, res) => {
+  res.clearCookie('authToken', {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+  });
+  res.status(200).json({ message: 'Logged out successfully.' });
 };

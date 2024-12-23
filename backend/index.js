@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const authRoutes = require('./src/routes/auth');
@@ -8,9 +8,18 @@ const proverbRoutes = require('./src/routes/proverbs');
 
 const app = express();
 
-app.use(cors());
-app.use(bodyParser.json());
+// Middleware
+app.use(
+  cors({
+    origin: "https://your-domain.com", // Replace with your frontend domain
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true, // Allow sending cookies
+  })
+);
+app.use(express.json());
+app.use(cookieParser());
 
+// Routes
 app.use('/auth', authRoutes);
 app.use('/proverbs', proverbRoutes);
 
@@ -18,14 +27,8 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK' });
 });
 
+// Start Server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
-app.use(
-  cors({
-    origin: "proverbs-generator.vercel.app", // Replace with your Vercel domain
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  })
-);
