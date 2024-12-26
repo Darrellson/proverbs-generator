@@ -14,8 +14,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // Use the environment variable for the API URL
-  const API_URL = import.meta.env.VITE_API_URL; // Vite environment variable
+  // Use the updated API URL
+  const API_URL = 'https://proverbscreator.online';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-const backendUrl = 'https://express-backend-414536605087.us-central1.run.app'; // Cloud Run URL
+const backendUrl = 'https://proverbscreator.online'; // Updated API domain
 
 fetch(`${backendUrl}/your-endpoint`)
   .then(response => response.json())

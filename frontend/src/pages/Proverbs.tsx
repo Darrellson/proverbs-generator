@@ -6,8 +6,8 @@ const Proverbs: React.FC = () => {
   const [proverb, setProverb] = useState('');
   const { token } = useAuth();
 
-  // Use the environment variable for the API URL
-  const API_URL = import.meta.env.VITE_API_URL; // Vite environment variable
+  // Use the updated API URL
+  const API_URL = 'https://proverbscreator.online';
 
   useEffect(() => {
     if (token) {
