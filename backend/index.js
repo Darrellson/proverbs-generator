@@ -11,7 +11,7 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    origin: "https://proverbs-generator.vercel.app/", // Replace with your frontend domain
+    origin: "https://www.proverbscreator.online/", // Replace with your frontend domain
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true, // Allow sending cookies
   })
