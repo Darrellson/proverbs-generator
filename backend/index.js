@@ -9,7 +9,14 @@ const proverbRoutes = require("./src/routes/proverbs");
 const app = express();
 
 // Middleware
-app.use(cors({ origin: "https://proverbscreator.online", credentials: true }));
+
+const corsOptions = {
+  origin: "https://www.proverbscreator.online", // Allow requests from this origin
+  methods: ["GET", "POST", "OPTIONS"], // Allow specific HTTP methods
+  credentials: true, // Allow cookies if needed
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
