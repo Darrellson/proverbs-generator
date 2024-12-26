@@ -1,22 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 const Proverbs: React.FC = () => {
-  const [proverb, setProverb] = useState('');
+  const [proverb, setProverb] = useState("");
   const { token } = useAuth();
-
-  // Use the updated API URL
-  const API_URL = 'https://proverbscreator.online';
+  const API_URL = "https://proverbscreator.online";
 
   useEffect(() => {
     if (token) {
       axios
-        .get(`${API_URL}/proverbs`, {
-          headers: { Authorization: token }, // Sending the token for authentication
-        })
+        .get(`${API_URL}/proverbs`, { headers: { Authorization: token } })
         .then((res) => setProverb(res.data.combined))
-        .catch(() => setProverb('Error loading proverbs.'));
+        .catch(() => setProverb("Error loading proverbs."));
     }
   }, [token, API_URL]);
 

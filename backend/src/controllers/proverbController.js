@@ -1,18 +1,21 @@
-const { PrismaClient } = require('@prisma/client');
+const fs = require("fs");
+const path = require("path");
 
-const prisma = new PrismaClient();
+const proverbsPath = path.join(__dirname, "../data/proverbs.json");
 
-exports.generateProverb = async (req, res) => {
-  const proverbs = await prisma.proverb.findMany();
-  if (proverbs.length < 2) return res.status(500).json({ error: 'Not enough proverbs' });
+exports.getRandomProverb = async (req, res) => {
+  try {
+    const proverbsData = fs.readFileSync(proverbsPath, "utf8");
+    const proverbs = JSON.parse(proverbsData);
 
-  // Select two random proverbs
-  const [p1, p2] = proverbs.sort(() => 0.5 - Math.random()).slice(0, 2);
+    if (!proverbs || proverbs.length === 0) {
+      return res.status(404).json({ error: "No proverbs found." });
+    }
 
-  // Generate a new proverb
-  const firstPart = p2.text.split(',')[0];
-  const secondPart = p1.text.split(',').slice(1).join(',');
-  const combined = `${firstPart}, ${secondPart}`;
-
-  res.json({ combined });
+    const randomIndex = Math.floor(Math.random() * proverbs.length);
+    res.status(200).json({ combined: proverbs[randomIndex] });
+  } catch (error) {
+    console.error("Error reading proverbs file:", error);
+    res.status(500).json({ error: "Error fetching proverbs" });
+  }
 };

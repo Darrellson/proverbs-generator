@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from "react";
 
 type AuthContextType = {
   token: string | null;
@@ -6,19 +6,19 @@ type AuthContextType = {
 };
 
 type AuthProviderProps = {
-  children: ReactNode; 
+  children: ReactNode;
 };
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
 
   const updateToken = (newToken: string | null) => {
     if (newToken) {
-      localStorage.setItem('token', newToken);
+      localStorage.setItem("token", newToken);
     } else {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
     }
     setToken(newToken);
   };
@@ -32,6 +32,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
