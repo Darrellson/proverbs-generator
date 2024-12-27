@@ -11,7 +11,7 @@ const app = express();
 // Middleware
 
 const corsOptions = {
-  origin: "proverbscreator.online", // Allow requests from this origin
+  origin: "www.proverbscreator.online", // Allow requests from this origin
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Allow specific HTTP methods
   credentials: true, // Allow cookies if needed
 };
