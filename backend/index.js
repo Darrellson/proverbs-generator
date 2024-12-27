@@ -10,11 +10,18 @@ const app = express();
 
 // Middleware
 
+// const corsOptions = {
+//   origin: "proverbscreator.online", // Allow requests from this origin
+//   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Allow specific HTTP methods
+//   credentials: true, // Allow cookies if needed
+// };
+
 const corsOptions = {
-  origin: "proverbscreator.online", // Allow requests from this origin
+  origin: ["https://proverbscreator.online", "https://www.proverbscreator.online"], // Allow both origins
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Allow specific HTTP methods
   credentials: true, // Allow cookies if needed
 };
+
 
 app.use(cors(corsOptions));
 app.use(express.json());
