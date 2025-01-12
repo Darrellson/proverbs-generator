@@ -14,7 +14,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const API_URL = "https://proverbscreator.online";
+  const API_URL = process.env.API_URL;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

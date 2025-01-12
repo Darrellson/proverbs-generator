@@ -1,4 +1,4 @@
-const backendUrl = 'https://proverbscreator.online'; // Updated API domain
+const backendUrl = process.env.API_URL; // Updated API domain
 
 fetch(`${backendUrl}/your-endpoint`)
   .then(response => response.json())
