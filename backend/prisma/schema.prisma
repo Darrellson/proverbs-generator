@@ -25,4 +25,5 @@ model User {
 model Proverb {
   id   Int    @id @default(autoincrement())
   text String
+   isSending Boolean  @default(false) 
 }
