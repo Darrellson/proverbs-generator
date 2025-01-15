@@ -12,8 +12,19 @@ exports.getRandomProverb = async (req, res) => {
       return res.status(404).json({ error: "No proverbs found." });
     }
 
-    const randomIndex = Math.floor(Math.random() * proverbs.length);
-    res.status(200).json({ combined: proverbs[randomIndex] });
+    // Transform proverbs by swapping beginning and ending
+    const transformedProverbs = proverbs.map((proverb) => ({
+      beginning: proverb.ending,
+      ending: proverb.beginning,
+    }));
+
+    const randomIndex = Math.floor(Math.random() * transformedProverbs.length);
+    const selectedProverb = transformedProverbs[randomIndex];
+
+    // Combine the transformed beginning and ending
+    const combinedProverb = `${selectedProverb.beginning} ${selectedProverb.ending}`;
+
+    res.status(200).json({ combined: combinedProverb });
   } catch (error) {
     console.error("Error reading proverbs file:", error);
     res.status(500).json({ error: "Error fetching proverbs" });
