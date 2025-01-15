@@ -14,7 +14,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const API_URL = process.env.API_URL;
+  const API_URL = import.meta.env.API_URL;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +29,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
       } else {
         alert("Invalid credentials");
       }
-    } catch (error) {
+    } catch {
       alert("An error occurred.");
     } finally {
       setLoading(false);
@@ -59,7 +59,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
           required
         />
       </div>
-      <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+      <button
+        type="submit"
+        className="btn btn-primary w-100"
+        disabled={loading}
+      >
         {loading ? "Processing..." : isRegistering ? "Register" : "Login"}
       </button>
     </form>
