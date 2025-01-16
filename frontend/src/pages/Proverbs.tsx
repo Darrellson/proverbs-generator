@@ -5,16 +5,18 @@ import { useAuth } from "../context/AuthContext";
 const Proverbs: React.FC = () => {
   const [proverb, setProverb] = useState("");
   const { token } = useAuth();
-  const API_URL = import.meta.env.VITE_API_URL;
+  const VITE_API_URL = import.meta.env.VITE_API_URL;
+
+  
 
   useEffect(() => {
     if (token) {
       axios
-        .get(`${API_URL}/proverbs`, { headers: { Authorization: token } })
+        .get(`${VITE_API_URL}/proverbs`, { headers: { Authorization: token } })
         .then((res) => setProverb(res.data.combined))
         .catch(() => setProverb("Error loading proverbs."));
     }
-  }, [token, API_URL]);
+  }, [token, VITE_API_URL]);
 
   return (
     <div className="container mt-5">
