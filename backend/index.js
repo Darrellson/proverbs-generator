@@ -9,11 +9,10 @@ const proverbRoutes = require("./src/routes/proverbs");
 const app = express();
 
 const corsOptions = {
-  origin: "http://proverbscreator.online", // Allow requests from this origin
+  origin: "http://localhost:5173", // Allow requests from this origin
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Allow specific HTTP methods
   credentials: true, // Allow cookies if needed
 };
-
 
 app.use(cors(corsOptions));
 app.use(express.json());
