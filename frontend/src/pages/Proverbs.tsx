@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 const Proverbs: React.FC = () => {
   const [proverb, setProverb] = useState("");
   const { token } = useAuth();
-  const API_URL =  process.env.API_URL;
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     if (token) {
