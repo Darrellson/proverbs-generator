@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Proverbs from "./pages/Proverbs";
+import AdminPanel from "./pages/adminpanel"; // Import AdminPanel
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
@@ -22,6 +23,14 @@ const App: React.FC = () => {
             element={
               <ProtectedRoute>
                 <Proverbs />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
               </ProtectedRoute>
             }
           />

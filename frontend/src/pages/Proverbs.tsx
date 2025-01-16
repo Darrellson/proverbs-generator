@@ -7,8 +7,6 @@ const Proverbs: React.FC = () => {
   const { token } = useAuth();
   const VITE_API_URL = import.meta.env.VITE_API_URL;
 
-  
-
   useEffect(() => {
     if (token) {
       axios
