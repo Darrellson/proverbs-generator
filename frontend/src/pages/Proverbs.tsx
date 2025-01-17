@@ -4,13 +4,13 @@ import { useAuth } from "../context/AuthContext";
 
 const Proverbs: React.FC = () => {
   const [proverb, setProverb] = useState("");
-  const { token } = useAuth();
+  const { token } = useAuth(); // Assuming you're using a context for authentication
   const VITE_API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     if (token) {
       axios
-        .get(`${VITE_API_URL}/api/proverbs/random`, { headers: { Authorization: token } })
+        .get(`${VITE_API_URL}/proverbs/random`, { headers: { Authorization: token } })
         .then((res) => setProverb(res.data.combined))
         .catch((err) => {
           console.error('Error details:', err);
