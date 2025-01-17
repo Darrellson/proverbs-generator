@@ -38,24 +38,27 @@ async function insertProverbs() {
 // Function to get a random transformed proverb
 const getRandomProverb = async (req, res) => {
   try {
-    const proverbs = await prisma.proverb.findMany();
-    if (!proverbs || proverbs.length === 0) {
+    const proverbCount = await prisma.proverb.count();
+    if (proverbCount === 0) {
       return res.status(404).json({ error: "No proverbs found." });
     }
 
-    const transformedProverbs = proverbs.map((proverb) => ({
-      beginning: proverb.ending,
-      ending: proverb.beginning,
-    }));
+    const randomIndex = Math.floor(Math.random() * proverbCount);
+    const selectedProverb = await prisma.proverb.findMany({
+      skip: randomIndex,
+      take: 1,
+    });
 
-    const randomIndex = Math.floor(Math.random() * transformedProverbs.length);
-    const selectedProverb = transformedProverbs[randomIndex];
-    const combinedProverb = `${selectedProverb.beginning} ${selectedProverb.ending}`;
+    const transformedProverb = {
+      beginning: selectedProverb[0].ending,
+      ending: selectedProverb[0].beginning,
+    };
 
+    const combinedProverb = `${transformedProverb.beginning} ${transformedProverb.ending}`;
     res.status(200).json({ combined: combinedProverb });
   } catch (error) {
-    console.error("Error fetching proverbs:", error);
-    res.status(500).json({ error: "Error fetching proverbs" });
+    console.error('Error fetching proverbs:', error);
+    res.status(500).json({ error: 'Error fetching proverbs' });
   }
 };
 
