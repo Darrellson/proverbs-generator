@@ -10,6 +10,8 @@ const AdminPanel: React.FC = () => {
 
   useEffect(() => {
     if (token) {
+      console.log('Token exists:', token);
+      console.log('API URL:', VITE_API_URL);
       axios
         .get(`${VITE_API_URL}/proverbs`, { headers: { Authorization: token } })
         .then((res) => setProverbs(res.data))

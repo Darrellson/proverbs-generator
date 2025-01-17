@@ -10,9 +10,12 @@ const Proverbs: React.FC = () => {
   useEffect(() => {
     if (token) {
       axios
-        .get(`${VITE_API_URL}/proverbs/random`, { headers: { Authorization: token } })
+        .get(`${VITE_API_URL}/api/proverbs/random`, { headers: { Authorization: token } })
         .then((res) => setProverb(res.data.combined))
-        .catch(() => setProverb("Error loading proverbs."));
+        .catch((err) => {
+          console.error('Error details:', err);
+          setProverb("Error loading proverbs.");
+        });
     }
   }, [token, VITE_API_URL]);
 
