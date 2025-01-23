@@ -34,18 +34,17 @@ const AdminPanel: React.FC = () => {
     if (newProverb.beginning && newProverb.ending && token) {
       axios
         .post(
-          `${VITE_API_URL}/proverbs`,
-          { ...newProverb },
-          { headers: { Authorization: token } }
+          `${VITE_API_URL}/proverbs/`,  // Ensure correct endpoint
+          { beginning: newProverb.beginning, ending: newProverb.ending },
+          { headers: { Authorization: `Bearer ${token}` } }  // Add 'Bearer'
         )
         .then((res) => {
           setProverbs([...proverbs, res.data]);
-          setNewProverb({ beginning: "", ending: "" }); // Reset input fields
+          setNewProverb({ beginning: "", ending: "" });
         })
         .catch((err) => console.error("Error adding proverb:", err));
     }
   };
-
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">Admin Panel</h2>

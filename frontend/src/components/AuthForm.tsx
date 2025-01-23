@@ -15,23 +15,37 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const [loading, setLoading] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
- 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const url = `${API_URL}/auth/${isRegistering ? "register" : "login"}`;
+    const url = `${API_URL}/auth/login`;
 
     try {
-      const response = await axios.post(url, { email, password });
+      const response = await axios.post(
+        url,
+        {
+          email,
+          password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       if (response.data.token) {
         setToken(response.data.token);
         navigate("/proverbs");
-      } else {
-        alert("Invalid credentials");
       }
-    } catch {
-      alert("An error occurred.");
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Login error:", error.response?.data);
+        alert(error.response?.data?.error || "Login failed");
+      } else {
+        alert("An unexpected error occurred");
+      }
     } finally {
       setLoading(false);
     }
