@@ -9,7 +9,7 @@ const app = express();
 
 // Only apply express.json() to POST, PUT, PATCH, and DELETE routes
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: process.env.CLIENT_ORIGIN, // Default fallback
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
 }));
