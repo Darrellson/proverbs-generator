@@ -20,30 +20,44 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
     e.preventDefault();
     setLoading(true);
     const url = `${API_URL}/auth/login`;
-
+  
     try {
+      console.log('Login Attempt:', {
+        email,
+        passwordLength: password.length,
+        apiUrl: url
+      });
+  
       const response = await axios.post(
         url,
         {
-          email,
+          email: email.toLowerCase().trim(), // Normalize email
           password,
         },
         {
           headers: {
             "Content-Type": "application/json",
           },
+          withCredentials: true // Add if using cookies
         }
       );
-
+  
+      console.log('Login Response:', response.data);
+  
       if (response.data.token) {
         setToken(response.data.token);
         navigate("/proverbs");
       }
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error("Login error:", error.response?.data);
+        console.error('Detailed Login Error:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          headers: error.response?.headers
+        });
         alert(error.response?.data?.error || "Login failed");
       } else {
+        console.error('Unexpected Login Error:', error);
         alert("An unexpected error occurred");
       }
     } finally {

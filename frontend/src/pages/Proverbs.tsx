@@ -11,16 +11,31 @@ const Proverbs: React.FC = () => {
     if (token) {
       const fetchRandomProverb = async () => {
         try {
-          const response = await axios.get(`${VITE_API_URL}/proverbs`, { 
-            headers: { Authorization: `Bearer ${token}` } 
+          console.log('Fetch Proverb Details:', {
+            url: `${VITE_API_URL}/proverbs`,
+            tokenLength: token.length,
+            tokenStart: token.substring(0, 10)
           });
+  
+          const response = await axios.get(`${VITE_API_URL}/proverbs`, { 
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            } 
+          });
+  
+          console.log('Proverb Response:', response.data);
           setProverb(response.data.combined);
         } catch (err) {
-          console.error('Error details:', err);
+          console.error('Comprehensive Proverb Error:', {
+            message: err.message,
+            status: err.response?.status,
+            data: err.response?.data
+          });
           setProverb("Error loading proverbs.");
         }
       };
-
+  
       fetchRandomProverb();
     }
   }, [token, VITE_API_URL]);
