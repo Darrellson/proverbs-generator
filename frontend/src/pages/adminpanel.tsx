@@ -10,24 +10,33 @@ const AdminPanel: React.FC = () => {
 
   useEffect(() => {
     if (token) {
-      console.log('Token exists:', token);
-      console.log('API URL:', VITE_API_URL);
       axios
-        .get(`${VITE_API_URL}/proverbs`, { headers: { Authorization: token } })
-        .then((res) => setProverbs(res.data))
-        .catch((err) => console.error("Error fetching proverbs:", err));
+        .get(`${VITE_API_URL}/proverbs`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => {
+          // Ensure response data is an array
+          const data = Array.isArray(res.data) ? res.data : [];
+          setProverbs(data);
+        })
+        .catch((err) => {
+          console.error("Error fetching proverbs:", err);
+        });
     }
   }, [token, VITE_API_URL]);
-  
 
   const handleDelete = (id: number) => {
     if (token) {
       axios
-        .delete(`${VITE_API_URL}/proverbs/${id}`, { headers: { Authorization: token } })
+        .delete(`${VITE_API_URL}/proverbs/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
         .then(() => {
           setProverbs(proverbs.filter((proverb) => proverb.id !== id));
         })
-        .catch((err) => console.error("Error deleting proverb:", err));
+        .catch((err) => {
+          console.error("Error deleting proverb:", err);
+        });
     }
   };
 
@@ -35,56 +44,63 @@ const AdminPanel: React.FC = () => {
     if (newProverb.beginning && newProverb.ending && token) {
       axios
         .post(
-          `${VITE_API_URL}/proverbs/`,  // Ensure correct endpoint
+          `${VITE_API_URL}/proverbs/`,
           { beginning: newProverb.beginning, ending: newProverb.ending },
-          { headers: { Authorization: `Bearer ${token}` } }  // Add 'Bearer'
+          { headers: { Authorization: `Bearer ${token}` } }
         )
         .then((res) => {
           setProverbs([...proverbs, res.data]);
           setNewProverb({ beginning: "", ending: "" });
         })
-        .catch((err) => console.error("Error adding proverb:", err));
+        .catch((err) => {
+          console.error("Error adding proverb:", err);
+        });
     }
   };
+
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">Admin Panel</h2>
 
-      {/* Display Proverbs in two columns */}
-      <div className="row mb-4">
-        <div className="col-md-6">
-          <h4 className="text-center">Beginning of Proverbs</h4>
-          <ul className="list-group">
-            {proverbs.map((proverb) => (
-              <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
-                {proverb.beginning}
-                <button
-                  onClick={() => handleDelete(proverb.id)}
-                  className="btn btn-danger btn-sm"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
+      {/* Display Proverbs */}
+      {Array.isArray(proverbs) && proverbs.length > 0 ? (
+        <div className="row mb-4">
+          <div className="col-md-6">
+            <h4 className="text-center">Beginning of Proverbs</h4>
+            <ul className="list-group">
+              {proverbs.map((proverb) => (
+                <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
+                  {proverb.beginning}
+                  <button
+                    onClick={() => handleDelete(proverb.id)}
+                    className="btn btn-danger btn-sm"
+                  >
+                    Delete
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="col-md-6">
+            <h4 className="text-center">Ending of Proverbs</h4>
+            <ul className="list-group">
+              {proverbs.map((proverb) => (
+                <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
+                  {proverb.ending}
+                  <button
+                    onClick={() => handleDelete(proverb.id)}
+                    className="btn btn-danger btn-sm"
+                  >
+                    Delete
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-        <div className="col-md-6">
-          <h4 className="text-center">Ending of Proverbs</h4>
-          <ul className="list-group">
-            {proverbs.map((proverb) => (
-              <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
-                {proverb.ending}
-                <button
-                  onClick={() => handleDelete(proverb.id)}
-                  className="btn btn-danger btn-sm"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      ) : (
+        <p className="text-center">No proverbs available. Please add one!</p>
+      )}
 
       {/* Add New Proverb Form */}
       <div className="card">
