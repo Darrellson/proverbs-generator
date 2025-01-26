@@ -18,6 +18,7 @@ const AdminPanel: React.FC = () => {
         .catch((err) => console.error("Error fetching proverbs:", err));
     }
   }, [token, VITE_API_URL]);
+  
 
   const handleDelete = (id: number) => {
     if (token) {

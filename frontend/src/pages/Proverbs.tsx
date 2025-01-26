@@ -30,7 +30,7 @@ const Proverbs: React.FC = () => {
           console.error('Comprehensive Proverb Error:', {
             message: err.message,
             status: err.response?.status,
-            data: err.response?.data
+            data: error.response?.data
           });
           setProverb("Error loading proverbs.");
         }

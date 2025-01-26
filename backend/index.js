@@ -30,3 +30,7 @@ app.use('*', (req, res) => res.status(404).send('Route not found'));
 // Start Server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+// Email: user1@example.com
+ // Password: test123456
