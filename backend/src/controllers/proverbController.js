@@ -83,12 +83,19 @@ exports.getRandomProverb = async (req, res) => {
 
 exports.getProverbs = async (req, res) => {
   try {
-    const proverbs = await prisma.proverb.findMany({ orderBy: { id: "asc" } });
-    return proverbs.length
-      ? res.status(200).json(proverbs)
-      : res.status(404).json({ message: "No proverbs found." });
+    const proverbs = await prisma.proverb.findMany({
+      orderBy: { id: "asc" },
+    });
+
+    if (!proverbs.length) {
+      return res.status(404).json({ message: "No proverbs found." });
+    }
+
+    // ✅ Ensure response is an array of proverbs
+    return res.status(200).json(proverbs);
   } catch (error) {
     console.error("Error fetching proverbs:", error.message);
     return res.status(500).json({ error: "Error fetching proverbs." });
   }
 };
+

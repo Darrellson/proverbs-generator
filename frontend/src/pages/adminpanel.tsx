@@ -4,26 +4,31 @@ import { useAuth } from "../context/AuthContext";
 
 const AdminPanel: React.FC = () => {
   const { token } = useAuth();
-  const [proverbs, setProverbs] = useState<{ beginning: string; ending: string; id: number }[]>([]);
+  const [proverbs, setProverbs] = useState<{ id: number; beginning: string; ending: string }[]>([]);
   const [newProverb, setNewProverb] = useState({ beginning: "", ending: "" });
   const VITE_API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    if (token) {
-      axios
-        .get(`${VITE_API_URL}/proverbs`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => {
-          // Ensure response data is an array
-          const data = Array.isArray(res.data) ? res.data : [];
-          setProverbs(data);
-        })
-        .catch((err) => {
-          console.error("Error fetching proverbs:", err);
-        });
-    }
+    axios
+      .get(`${VITE_API_URL}/proverbs`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        console.log("API Raw Response:", res.data); // Debug response format
+  
+        if (Array.isArray(res.data)) {
+          setProverbs(res.data); // ✅ Correct: Setting an array of proverbs
+        } else {
+          console.error("🚨 Unexpected API response format:", res.data);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching proverbs:", err);
+      });
   }, [token, VITE_API_URL]);
+  
+  
+  
 
   const handleDelete = (id: number) => {
     if (token) {
@@ -63,7 +68,7 @@ const AdminPanel: React.FC = () => {
       <h2 className="text-center mb-4">Admin Panel</h2>
 
       {/* Display Proverbs */}
-      {Array.isArray(proverbs) && proverbs.length > 0 ? (
+      {proverbs.length > 0 ? (
         <div className="row mb-4">
           <div className="col-md-6">
             <h4 className="text-center">Beginning of Proverbs</h4>
@@ -71,10 +76,7 @@ const AdminPanel: React.FC = () => {
               {proverbs.map((proverb) => (
                 <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
                   {proverb.beginning}
-                  <button
-                    onClick={() => handleDelete(proverb.id)}
-                    className="btn btn-danger btn-sm"
-                  >
+                  <button onClick={() => handleDelete(proverb.id)} className="btn btn-danger btn-sm">
                     Delete
                   </button>
                 </li>
@@ -87,10 +89,7 @@ const AdminPanel: React.FC = () => {
               {proverbs.map((proverb) => (
                 <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
                   {proverb.ending}
-                  <button
-                    onClick={() => handleDelete(proverb.id)}
-                    className="btn btn-danger btn-sm"
-                  >
+                  <button onClick={() => handleDelete(proverb.id)} className="btn btn-danger btn-sm">
                     Delete
                   </button>
                 </li>
