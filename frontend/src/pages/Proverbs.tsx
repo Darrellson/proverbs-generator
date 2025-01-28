@@ -26,12 +26,16 @@ const Proverbs: React.FC = () => {
   
           console.log('Proverb Response:', response.data);
           setProverb(response.data.combined);
-        } catch (err) {
-          console.error('Comprehensive Proverb Error:', {
-            message: err.message,
-            status: err.response?.status,
-            data: error.response?.data
-          });
+        } catch (err: unknown) {  // Explicitly typing err as 'unknown'
+          if (axios.isAxiosError(err)) {
+            console.error('Comprehensive Proverb Error:', {
+              message: err.message,
+              status: err.response?.status,
+              data: err.response?.data
+            });
+          } else {
+            console.error('Unknown error:', err);
+          }
           setProverb("Error loading proverbs.");
         }
       };
