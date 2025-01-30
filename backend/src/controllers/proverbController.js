@@ -32,30 +32,6 @@ exports.insertProverbs = async (req, res) => {
   }
 };
 
-exports.deleteProverb = async (req, res) => {
-  const { id } = req.params;
-  try {
-    await prisma.proverb.delete({
-      where: { id: parseInt(id) },
-    });
-    return res.status(200).json({ message: "Proverb deleted successfully" });
-  } catch (error) {
-    return res.status(500).json({ error: "Error deleting proverb" });
-  }
-};
-
-exports.createProverb = async (req, res) => {
-  const { beginning, ending } = req.body;
-  try {
-    const newProverb = await prisma.proverb.create({
-      data: { beginning, ending },
-    });
-    return res.status(201).json(newProverb);
-  } catch (error) {
-    return res.status(500).json({ error: "Error creating proverb" });
-  }
-};
-
 exports.getRandomProverb = async (req, res) => {
   try {
     const proverbCount = await prisma.proverb.count();
@@ -81,17 +57,10 @@ exports.getRandomProverb = async (req, res) => {
   }
 };
 
+
 exports.getProverbs = async (req, res) => {
   try {
-    const proverbs = await prisma.proverb.findMany({
-      orderBy: { id: "asc" },
-    });
-
-    if (!proverbs.length) {
-      return res.status(404).json({ message: "No proverbs found." });
-    }
-
-    // ✅ Ensure response is an array of proverbs
+    const proverbs = await prisma.proverb.findMany();
     return res.status(200).json(proverbs);
   } catch (error) {
     console.error("Error fetching proverbs:", error.message);
@@ -99,3 +68,24 @@ exports.getProverbs = async (req, res) => {
   }
 };
 
+exports.createProverb = async (req, res) => {
+  const { beginning, ending } = req.body;
+  try {
+    const newProverb = await prisma.proverb.create({ data: { beginning, ending } });
+    return res.status(201).json(newProverb);
+  } catch (error) {
+    console.error("Error creating proverb:", error.message);
+    return res.status(500).json({ error: "Error creating proverb" });
+  }
+};
+
+exports.deleteProverb = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await prisma.proverb.delete({ where: { id: parseInt(id) } });
+    return res.status(200).json({ message: "Proverb deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting proverb:", error.message);
+    return res.status(500).json({ error: "Error deleting proverb" });
+  }
+};

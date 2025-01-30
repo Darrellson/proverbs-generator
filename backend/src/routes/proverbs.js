@@ -1,19 +1,16 @@
 const express = require("express");
 const {
-  insertProverbs,
-  getRandomProverb,
   getProverbs,
-  deleteProverb,
+  getRandomProverb,  // <-- Add this function
   createProverb,
+  deleteProverb,
 } = require("../controllers/proverbController");
-const { authenticate } = require("../middlewares/authenticate");
 
 const router = express.Router();
 
-router.get("/", authenticate, getRandomProverb);
-router.post("/insert", authenticate, insertProverbs);
-router.get("/proverbs", authenticate, getProverbs);
-router.delete("/:id", authenticate, deleteProverb);
-router.post("/", authenticate, createProverb);
+router.get("/", getProverbs);
+router.get("/random", getRandomProverb);  // <-- Add this route
+router.post("/", createProverb);
+router.delete("/:id", deleteProverb);
 
 module.exports = router;

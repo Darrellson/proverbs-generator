@@ -10,31 +10,15 @@ const Proverbs: React.FC = () => {
   const fetchRandomProverb = async () => {
     if (token) {
       try {
-        console.log('Fetch Proverb Details:', {
-          url: `${VITE_API_URL}/proverbs`,
-          tokenLength: token.length,
-          tokenStart: token.substring(0, 10)
+        console.log("Fetching Random Proverb...");
+        const response = await axios.get(`${VITE_API_URL}/proverbs/random`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        const response = await axios.get(`${VITE_API_URL}/proverbs`, { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          } 
-        });
-
-        console.log('Proverb Response:', response.data);
+        console.log("Response:", response.data);
         setProverb(response.data.combined);
-      } catch (err: unknown) {  
-        if (axios.isAxiosError(err)) {
-          console.error('Comprehensive Proverb Error:', {
-            message: err.message,
-            status: err.response?.status,
-            data: err.response?.data
-          });
-        } else {
-          console.error('Unknown error:', err);
-        }
+      } catch (error) {
+        console.error("Error fetching proverb:", error);
         setProverb("Error loading proverbs.");
       }
     }
@@ -42,10 +26,10 @@ const Proverbs: React.FC = () => {
 
   useEffect(() => {
     fetchRandomProverb();
-  }, [token, VITE_API_URL]);
+  }, [token]);
 
   return (
-    <div className="container mt-5 text-center">
+    <div className="container text-center mt-5">
       <h1>Random Georgian Proverb</h1>
       <p className="fs-4">{proverb}</p>
       <button className="btn btn-primary mt-3" onClick={fetchRandomProverb}>
