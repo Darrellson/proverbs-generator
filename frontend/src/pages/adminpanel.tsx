@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import "../styles/main.css";
 
 const AdminPanel: React.FC = () => {
   const { token } = useAuth();
@@ -17,24 +18,21 @@ const AdminPanel: React.FC = () => {
     }
 
     setLoading(true);
-    console.log("🔍 Sending Token:", token); // Debug Token
 
     axios
       .get(`${VITE_API_URL}/proverbs`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        console.log("✅ API Response:", res.data); // Debug response format
         if (Array.isArray(res.data)) {
           setProverbs(res.data);
           setError(null);
         } else {
-          setError(`🚨 Unexpected API response format: ${JSON.stringify(res.data)}`);
+          setError(`Unexpected API response format: ${JSON.stringify(res.data)}`);
         }
       })
-      .catch((err) => {
+      .catch(() => {
         setError("Error fetching proverbs.");
-        console.error("❌ Error fetching proverbs:", err);
       })
       .finally(() => setLoading(false));
   }, [token, VITE_API_URL]);
@@ -83,18 +81,20 @@ const AdminPanel: React.FC = () => {
         <div className="row mb-4">
           <div className="col-md-8 mx-auto">
             <h4 className="text-center">Proverbs List</h4>
-            <ul className="list-group">
-              {proverbs.map((proverb) => (
-                <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong>{proverb.beginning}</strong> - {proverb.ending}
-                  </div>
-                  <button onClick={() => handleDelete(proverb.id)} className="btn btn-danger btn-sm">
-                    Delete
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div className="list-container">
+              <ul className="list-group list-fixed">
+                {proverbs.map((proverb) => (
+                  <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong>{proverb.beginning}</strong> - {proverb.ending}
+                    </div>
+                    <button onClick={() => handleDelete(proverb.id)} className="btn btn-danger btn-sm">
+                      Delete
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
       ) : (
