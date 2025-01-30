@@ -3,6 +3,7 @@ import React, { createContext, useState, useContext, ReactNode } from "react";
 type AuthContextType = {
   token: string | null;
   setToken: (token: string | null) => void;
+  logout: () => void;
 };
 
 type AuthProviderProps = {
@@ -23,8 +24,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(newToken);
   };
 
+  const logout = () => {
+    updateToken(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ token, setToken: updateToken }}>
+    <AuthContext.Provider value={{ token, setToken: updateToken, logout }}>
       {children}
     </AuthContext.Provider>
   );

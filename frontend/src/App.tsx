@@ -3,12 +3,14 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Proverbs from "./pages/Proverbs";
-import AdminPanel from "./pages/adminpanel"; // Import AdminPanel
+import AdminPanel from "./pages/adminpanel";
+import AuthForm from "./components/AuthForm";
+import Logout from "./pages/Logout";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
   const { token } = useAuth();
-  return token ? children : <Navigate to="/" />;
+  return token ? children : <Navigate to="/login" />;
 };
 
 const App: React.FC = () => {
@@ -18,22 +20,11 @@ const App: React.FC = () => {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route
-            path="/proverbs"
-            element={
-              <ProtectedRoute>
-                <Proverbs />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminPanel />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/login" element={<AuthForm isRegistering={false} />} />
+          <Route path="/register" element={<AuthForm isRegistering={true} />} />
+          <Route path="/logout" element={<Logout />} />
+          <Route path="/proverbs" element={<ProtectedRoute><Proverbs /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><AdminPanel /></ProtectedRoute>} />
         </Routes>
       </Router>
     </AuthProvider>
