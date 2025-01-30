@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
@@ -10,54 +10,45 @@ interface AuthFormProps {
 const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { setToken } = useAuth();
+  const { token, setToken } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
+  // Redirect authenticated users
+  useEffect(() => {
+    if (token) {
+      navigate("/proverbs");
+    }
+  }, [token, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     const url = `${API_URL}/auth/login`;
-  
+
     try {
-      console.log('Login Attempt:', {
-        email,
-        passwordLength: password.length,
-        apiUrl: url
-      });
-  
       const response = await axios.post(
         url,
         {
-          email: email.toLowerCase().trim(), // Normalize email
+          email: email.toLowerCase().trim(),
           password,
         },
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true // Add if using cookies
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
         }
       );
-  
-      console.log('Login Response:', response.data);
-  
+
       if (response.data.token) {
         setToken(response.data.token);
         navigate("/proverbs");
       }
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        console.error('Detailed Login Error:', {
-          status: error.response?.status,
-          data: error.response?.data,
-          headers: error.response?.headers
-        });
         alert(error.response?.data?.error || "Login failed");
       } else {
-        console.error('Unexpected Login Error:', error);
         alert("An unexpected error occurred");
       }
     } finally {
