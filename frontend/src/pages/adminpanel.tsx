@@ -15,9 +15,8 @@ const AdminPanel: React.FC = () => {
       })
       .then((res) => {
         console.log("API Raw Response:", res.data); // Debug response format
-  
         if (Array.isArray(res.data)) {
-          setProverbs(res.data); // ✅ Correct: Setting an array of proverbs
+          setProverbs(res.data);
         } else {
           console.error("🚨 Unexpected API response format:", res.data);
         }
@@ -26,9 +25,6 @@ const AdminPanel: React.FC = () => {
         console.error("Error fetching proverbs:", err);
       });
   }, [token, VITE_API_URL]);
-  
-  
-  
 
   const handleDelete = (id: number) => {
     if (token) {
@@ -51,7 +47,7 @@ const AdminPanel: React.FC = () => {
         .post(
           `${VITE_API_URL}/proverbs/`,
           { beginning: newProverb.beginning, ending: newProverb.ending },
-          { headers: { Authorization: `Bearer ${token}` } }
+          { headers: { Authorization: `Bearer ${token}` } } // ✅ Fixed closing braces
         )
         .then((res) => {
           setProverbs([...proverbs, res.data]);
@@ -62,7 +58,7 @@ const AdminPanel: React.FC = () => {
         });
     }
   };
-
+  
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">Admin Panel</h2>
@@ -70,25 +66,14 @@ const AdminPanel: React.FC = () => {
       {/* Display Proverbs */}
       {proverbs.length > 0 ? (
         <div className="row mb-4">
-          <div className="col-md-6">
-            <h4 className="text-center">Beginning of Proverbs</h4>
+          <div className="col-md-8 mx-auto">
+            <h4 className="text-center">Proverbs List</h4>
             <ul className="list-group">
               {proverbs.map((proverb) => (
                 <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  {proverb.beginning}
-                  <button onClick={() => handleDelete(proverb.id)} className="btn btn-danger btn-sm">
-                    Delete
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="col-md-6">
-            <h4 className="text-center">Ending of Proverbs</h4>
-            <ul className="list-group">
-              {proverbs.map((proverb) => (
-                <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  {proverb.ending}
+                  <div>
+                    <strong>{proverb.beginning}</strong> - {proverb.ending}
+                  </div>
                   <button onClick={() => handleDelete(proverb.id)} className="btn btn-danger btn-sm">
                     Delete
                   </button>
