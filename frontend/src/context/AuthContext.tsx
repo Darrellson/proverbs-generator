@@ -2,7 +2,8 @@ import React, { createContext, useState, useContext, ReactNode } from "react";
 
 type AuthContextType = {
   token: string | null;
-  setToken: (token: string | null) => void;
+  isAdmin: boolean;
+  setToken: (token: string | null, admin: boolean) => void; // Updated type
   logout: () => void;
 };
 
@@ -14,22 +15,28 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+  const [isAdmin, setIsAdmin] = useState<boolean>(
+    JSON.parse(localStorage.getItem("isAdmin") || "false")
+  );
 
-  const updateToken = (newToken: string | null) => {
+  const updateToken = (newToken: string | null, admin: boolean) => {
     if (newToken) {
       localStorage.setItem("token", newToken);
+      localStorage.setItem("isAdmin", JSON.stringify(admin));
     } else {
       localStorage.removeItem("token");
+      localStorage.removeItem("isAdmin");
     }
     setToken(newToken);
+    setIsAdmin(admin);
   };
 
   const logout = () => {
-    updateToken(null);
+    updateToken(null, false);
   };
 
   return (
-    <AuthContext.Provider value={{ token, setToken: updateToken, logout }}>
+    <AuthContext.Provider value={{ token, isAdmin, setToken: updateToken, logout }}>
       {children}
     </AuthContext.Provider>
   );

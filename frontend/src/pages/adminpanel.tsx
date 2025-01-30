@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "../styles/main.css";
 
 const AdminPanel: React.FC = () => {
-  const { token } = useAuth();
+  const { token, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [proverbs, setProverbs] = useState<{ id: number; beginning: string; ending: string }[]>([]);
   const [newProverb, setNewProverb] = useState({ beginning: "", ending: "" });
   const [error, setError] = useState<string | null>(null);
@@ -12,9 +14,9 @@ const AdminPanel: React.FC = () => {
   const VITE_API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    if (!token) {
-      setError("No token provided. Please log in.");
-      return;
+    if (!token || !isAdmin) {
+      alert("Access Denied: Admins Only");
+      navigate("/login");
     }
 
     setLoading(true);
@@ -35,7 +37,7 @@ const AdminPanel: React.FC = () => {
         setError("Error fetching proverbs.");
       })
       .finally(() => setLoading(false));
-  }, [token, VITE_API_URL]);
+  }, [token, VITE_API_URL,isAdmin, navigate]);
 
   const handleDelete = (id: number) => {
     if (!token) return;

@@ -11,6 +11,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false); // ✅ Add state for admin checkbox
   const { token, setToken } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -31,7 +32,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
 
     try {
       const payload = isRegistering
-        ? { name: name.trim(), email: email.toLowerCase().trim(), password }
+        ? { name: name.trim(), email: email.toLowerCase().trim(), password, isAdmin } // ✅ Include isAdmin
         : { email: email.toLowerCase().trim(), password };
 
       const response = await axios.post(url, payload, {
@@ -40,12 +41,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
       });
 
       if (isRegistering) {
-        // Show success message and redirect to login page
         alert("Registration successful! Please log in.");
         navigate("/login");
       } else if (response.data.token) {
-        // Set token and redirect to protected page
-        setToken(response.data.token);
+        setToken(response.data.token, response.data.isAdmin);
         navigate("/proverbs");
       }
     } catch (error: unknown) {
@@ -64,16 +63,30 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
       <h3 className="text-center">{isRegistering ? "Register" : "Login"}</h3>
       
       {isRegistering && (
-        <div className="mb-3">
-          <label>Name</label>
-          <input
-            type="text"
-            className="form-control"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
+        <>
+          <div className="mb-3">
+            <label>Name</label>
+            <input
+              type="text"
+              className="form-control"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-3 form-check">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              id="isAdmin"
+              checked={isAdmin}
+              onChange={() => setIsAdmin(!isAdmin)}
+            />
+            <label className="form-check-label" htmlFor="isAdmin">
+              Register as Admin
+            </label>
+          </div>
+        </>
       )}
 
       <div className="mb-3">
