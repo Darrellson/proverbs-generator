@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import React, { createContext, ReactNode, useContext, useState } from "react";
 
 type AuthContextType = {
   token: string | null;
@@ -14,23 +14,14 @@ type AuthProviderProps = {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setTokenState] = useState<string | null>(localStorage.getItem("token"));
-  const [isAdmin, setIsAdmin] = useState<boolean>(JSON.parse(localStorage.getItem("isAdmin") || "false"));
-
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem("token", token);
-      localStorage.setItem("isAdmin", JSON.stringify(isAdmin));
-    }
-  }, [token, isAdmin]);
+  const [token, setTokenState] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const setToken = (newToken: string | null, admin: boolean) => {
     if (newToken) {
       setTokenState(newToken);
       setIsAdmin(admin);
     } else {
-      localStorage.removeItem("token");
-      localStorage.removeItem("isAdmin");
       setTokenState(null);
       setIsAdmin(false);
     }
@@ -38,8 +29,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     setToken(null, false);
-    localStorage.removeItem("token");
-    localStorage.removeItem("isAdmin");
   };
 
   return (
