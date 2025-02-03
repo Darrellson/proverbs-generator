@@ -11,7 +11,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false);
   const { setToken } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -29,27 +28,26 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
     e.preventDefault();
     setLoading(true);
     const url = isRegistering ? `${API_URL}/auth/register` : `${API_URL}/auth/login`;
-  
+
     try {
       const payload = isRegistering
-        ? { name: name.trim(), email: email.toLowerCase().trim(), password, isAdmin }
+        ? { name: name.trim(), email: email.toLowerCase().trim(), password } // Do not send `isAdmin`
         : { email: email.toLowerCase().trim(), password };
-  
+
       const response = await axios.post(url, payload, {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
-  
+
       if (isRegistering) {
         alert("Registration successful! Please log in.");
         navigate("/login");
       } else if (response.data.token) {
-        setToken(response.data.token, response.data.isAdmin);
+        setToken(response.data.token, response.data.isAdmin); // The `isAdmin` will come from the backend
         navigate("/proverbs");
       }
-    } catch (error: unknown) { // Type 'unknown' for catch error
+    } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        // Type guard to narrow down error to AxiosError
         alert(error.response?.data?.error || (isRegistering ? "Registration failed" : "Login failed"));
       } else {
         alert("An unexpected error occurred");
@@ -58,34 +56,21 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
       setLoading(false);
     }
   };
+
   return (
     <form onSubmit={handleSubmit} className="container card p-4 shadow-sm mt-5">
       <h3 className="text-center">{isRegistering ? "Register" : "Login"}</h3>
       {isRegistering && (
-        <>
-          <div className="mb-3">
-            <label>Name</label>
-            <input
-              type="text"
-              className="form-control"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="mb-3 form-check">
-            <input
-              type="checkbox"
-              className="form-check-input"
-              id="isAdmin"
-              checked={isAdmin}
-              onChange={() => setIsAdmin(!isAdmin)}
-            />
-            <label className="form-check-label" htmlFor="isAdmin">
-              Register as Admin
-            </label>
-          </div>
-        </>
+        <div className="mb-3">
+          <label>Name</label>
+          <input
+            type="text"
+            className="form-control"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
       )}
       <div className="mb-3">
         <label>Email</label>
