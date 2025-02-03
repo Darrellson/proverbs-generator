@@ -1,4 +1,5 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, { createContext, ReactNode, useContext, useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
 type AuthContextType = {
   token: string | null;
@@ -14,8 +15,18 @@ type AuthProviderProps = {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setTokenState] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [token, setTokenState] = useState<string | null>(Cookies.get("token") || null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(JSON.parse(Cookies.get("isAdmin") || "false"));
+
+  useEffect(() => {
+    if (token) {
+      Cookies.set("token", token, { expires: 7 }); // Set cookie for 7 days
+      Cookies.set("isAdmin", JSON.stringify(isAdmin), { expires: 7 });
+    } else {
+      Cookies.remove("token");
+      Cookies.remove("isAdmin");
+    }
+  }, [token, isAdmin]);
 
   const setToken = (newToken: string | null, admin: boolean) => {
     if (newToken) {
