@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import "../styles/main.css";
 
 const AdminPanel: React.FC = () => {
   const { token, isAdmin } = useAuth();
@@ -17,6 +16,7 @@ const AdminPanel: React.FC = () => {
     if (!token || !isAdmin) {
       alert("Access Denied: Admins Only");
       navigate("/login");
+      return;
     }
 
     setLoading(true);
@@ -26,18 +26,14 @@ const AdminPanel: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        if (Array.isArray(res.data)) {
-          setProverbs(res.data);
-          setError(null);
-        } else {
-          setError(`Unexpected API response format: ${JSON.stringify(res.data)}`);
-        }
+        setProverbs(res.data);
+        setError(null);
       })
       .catch(() => {
         setError("Error fetching proverbs.");
       })
       .finally(() => setLoading(false));
-  }, [token, VITE_API_URL,isAdmin, navigate]);
+  }, [token, isAdmin, navigate]);
 
   const handleDelete = (id: number) => {
     if (!token) return;
@@ -79,29 +75,21 @@ const AdminPanel: React.FC = () => {
       {loading && <p className="text-center">Loading proverbs...</p>}
       {error && <p className="text-center text-danger">{error}</p>}
 
-      {proverbs.length > 0 ? (
-        <div className="row mb-4">
-          <div className="col-md-8 mx-auto">
-            <h4 className="text-center">Proverbs List</h4>
-            <div className="list-container">
-              <ul className="list-group list-fixed">
-                {proverbs.map((proverb) => (
-                  <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                      <strong>{proverb.beginning}</strong> - {proverb.ending}
-                    </div>
-                    <button onClick={() => handleDelete(proverb.id)} className="btn btn-danger btn-sm">
-                      Delete
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+      <div className="row mb-4">
+        <div className="col-md-8 mx-auto">
+          <h4 className="text-center">Proverbs List</h4>
+          <ul className="list-group">
+            {proverbs.map((proverb) => (
+              <li key={proverb.id} className="list-group-item">
+                <strong>{proverb.beginning}</strong> - {proverb.ending}
+                <button onClick={() => handleDelete(proverb.id)} className="btn btn-danger btn-sm">
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
-      ) : (
-        <p className="text-center">No proverbs available. Please add one!</p>
-      )}
+      </div>
 
       <div className="card">
         <div className="card-body">
@@ -120,9 +108,9 @@ const AdminPanel: React.FC = () => {
             value={newProverb.ending}
             onChange={(e) => setNewProverb({ ...newProverb, ending: e.target.value })}
           />
-          <div className="text-center">
-            <button className="btn btn-primary" onClick={handleAddProverb}>Add Proverb</button>
-          </div>
+          <button className="btn btn-primary" onClick={handleAddProverb}>
+            Add Proverb
+          </button>
         </div>
       </div>
     </div>

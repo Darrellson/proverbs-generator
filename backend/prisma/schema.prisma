@@ -16,12 +16,14 @@ generator client {
 
 
 model User {
-  id        Int     @id @default(autoincrement())
-  email     String  @unique
-  password  String
-  isAdmin   Boolean @default(false)
-  createdAt DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  isAdmin     Boolean  @default(false)
+  refreshToken String?  // Add this line to store refresh token
+  createdAt   DateTime @default(now())
 }
+
 
 model Proverb {
   id        Int    @id @default(autoincrement())

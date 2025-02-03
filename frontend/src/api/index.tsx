@@ -1,4 +1,4 @@
-const backendUrl =  import.meta.env.VITE_API_URL; // Updated API domain
+const backendUrl =  import.meta.env.VITE_API_URL;
 
 fetch(`${backendUrl}/your-endpoint`)
   .then(response => response.json())

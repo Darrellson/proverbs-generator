@@ -3,9 +3,12 @@ const jwt = require("jsonwebtoken");
 const prisma = require("../../prisma/prismaClient");
 
 const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRATION = "1d";  
+const REFRESH_TOKEN_EXPIRATION = "7d";  
 
+// Register User
 exports.register = async (req, res) => {
-  const { email, password, isAdmin = false } = req.body; // Allow optional isAdmin flag
+  const { email, password, isAdmin = false } = req.body;
 
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -24,7 +27,7 @@ exports.register = async (req, res) => {
   }
 };
 
-
+// Login User & Issue Tokens
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -36,14 +39,53 @@ exports.login = async (req, res) => {
     if (!isPasswordValid) return res.status(401).json({ error: "Invalid credentials" });
 
     const token = jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const refreshToken = jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-    return res.status(200).json({ token, isAdmin: user.isAdmin });
+    // Store refreshToken in database
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken }
+    });
+
+    return res.status(200).json({ token, refreshToken, isAdmin: user.isAdmin });
   } catch (error) {
     return res.status(500).json({ error: "Server error" });
   }
 };
 
 
-exports.logout = (req, res) => {
-  return res.clearCookie("authToken").status(200).json({ message: "Logged out successfully." });
+
+// Logout User & Invalidate Refresh Token
+exports.logout = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  // Invalidate the refresh token in the database (optional)
+  if (refreshToken) {
+    await prisma.user.updateMany({
+      where: { refreshToken },
+      data: { refreshToken: null }
+    });
+  }
+
+  res.clearCookie("authToken").status(200).json({ message: "Logged out successfully" });
+};
+
+// Refresh Access Token using Refresh Token
+exports.refreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) return res.status(401).json({ error: "Refresh token required" });
+
+  try {
+    const decoded = jwt.verify(refreshToken, JWT_SECRET);
+    const newAccessToken = jwt.sign(
+      { userId: decoded.userId, isAdmin: decoded.isAdmin },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRATION }
+    );
+
+    res.json({ token: newAccessToken });
+  } catch (error) {
+    return res.status(403).json({ error: "Invalid refresh token" });
+  }
 };
