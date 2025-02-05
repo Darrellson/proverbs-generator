@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const prisma = require("@prisma/client");  // Assuming you have Prisma set up
+const prisma = require("../../prisma/prismaClient");
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // Token Authentication Middleware
