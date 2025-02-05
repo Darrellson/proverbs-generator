@@ -4,8 +4,8 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Proverbs from "./pages/Proverbs";
 import AdminPanel from "./pages/adminpanel";
-import AuthForm from "./components/AuthForm";
-import Logout from "./pages/Logout";
+import AuthForm from "./pages/AuthForm";
+import Logout from "./components/Logout";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 const ProtectedRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
