@@ -33,7 +33,7 @@ const AdminPanel: React.FC = () => {
         setError("Error fetching proverbs.");
       })
       .finally(() => setLoading(false));
-  }, [token, isAdmin, navigate]);
+  }, [token, isAdmin, navigate, VITE_API_URL]);
 
   const handleDelete = (id: number) => {
     if (!token) return;
