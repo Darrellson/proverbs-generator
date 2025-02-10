@@ -35,17 +35,25 @@ exports.insertProverbs = async (req, res) => {
 exports.getRandomProverb = async (req, res) => {
   try {
     const proverbCount = await prisma.proverb.count();
-    if (proverbCount === 0) {
-      return res.status(404).json({ error: "No proverbs found." });
+    if (proverbCount < 2) {
+      return res.status(404).json({ error: "Not enough proverbs available." });
     }
 
-    const randomProverb = await prisma.proverb.findFirst({
-      skip: Math.floor(Math.random() * proverbCount),
-    });
+    // Fetch two random proverbs
+    let firstProverb, secondProverb;
+    do {
+      firstProverb = await prisma.proverb.findFirst({
+        skip: Math.floor(Math.random() * proverbCount),
+      });
+
+      secondProverb = await prisma.proverb.findFirst({
+        skip: Math.floor(Math.random() * proverbCount),
+      });
+    } while (firstProverb.id === secondProverb.id); // Ensure they're different
 
     const transformedProverb = {
-      beginning: randomProverb.ending,
-      ending: randomProverb.beginning,
+      beginning: firstProverb.ending, // Swap positions
+      ending: secondProverb.beginning,
     };
 
     return res.status(200).json({
@@ -56,6 +64,8 @@ exports.getRandomProverb = async (req, res) => {
     return res.status(500).json({ error: "Error fetching proverb." });
   }
 };
+
+
 
 
 exports.getProverbs = async (req, res) => {
