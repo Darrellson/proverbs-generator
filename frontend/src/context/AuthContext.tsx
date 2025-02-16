@@ -1,49 +1,54 @@
 import React, { createContext, ReactNode, useContext, useState, useEffect } from "react";
-import Cookies from "js-cookie";
+import axios from "axios";
 
 type AuthContextType = {
   token: string | null;
   isAdmin: boolean;
-  setToken: (token: string | null, admin: boolean) => void;
+  login: (accessToken: string, isAdmin: boolean) => void;
   logout: () => void;
+  refreshAccessToken: () => Promise<void>;
 };
 
-type AuthProviderProps = {
-  children: ReactNode;
-};
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setTokenState] = useState<string | null>(Cookies.get("token") || null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(JSON.parse(Cookies.get("isAdmin") || "false"));
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+  const [isAdmin, setIsAdmin] = useState<boolean>(JSON.parse(localStorage.getItem("isAdmin") || "false"));
 
   useEffect(() => {
     if (token) {
-      Cookies.set("token", token, { expires: 7 }); // Set cookie for 7 days
-      Cookies.set("isAdmin", JSON.stringify(isAdmin), { expires: 7 });
+      localStorage.setItem("token", token);
+      localStorage.setItem("isAdmin", JSON.stringify(isAdmin));
     } else {
-      Cookies.remove("token");
-      Cookies.remove("isAdmin");
+      localStorage.removeItem("token");
+      localStorage.removeItem("isAdmin");
     }
   }, [token, isAdmin]);
 
-  const setToken = (newToken: string | null, admin: boolean) => {
-    if (newToken) {
-      setTokenState(newToken);
-      setIsAdmin(admin);
-    } else {
-      setTokenState(null);
-      setIsAdmin(false);
+  const login = (accessToken: string, admin: boolean) => {
+    setToken(accessToken);
+    setIsAdmin(admin);
+  };
+
+  const logout = async () => {
+    await axios.post(`${import.meta.env.VITE_API_URL}/auth/logout`, {}, { withCredentials: true });
+    setToken(null);
+    setIsAdmin(false);
+  };
+
+  const refreshAccessToken = async () => {
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh-token`, {}, { withCredentials: true });
+      if (response.data.accessToken) {
+        setToken(response.data.accessToken);
+      }
+    } catch {
+      logout();
     }
   };
 
-  const logout = () => {
-    setToken(null, false);
-  };
-
   return (
-    <AuthContext.Provider value={{ token, isAdmin, setToken, logout }}>
+    <AuthContext.Provider value={{ token, isAdmin, login, logout, refreshAccessToken }}>
       {children}
     </AuthContext.Provider>
   );

@@ -3,8 +3,16 @@ const jwt = require("jsonwebtoken");
 const prisma = require("../../prisma/prismaClient");
 
 const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRATION = "1d";  
-const REFRESH_TOKEN_EXPIRATION = "7d";  
+const REFRESH_SECRET = process.env.REFRESH_SECRET;
+const JWT_EXPIRATION = "15m";  // Shorter expiration for security
+const REFRESH_TOKEN_EXPIRATION = "7d";
+
+// Generate Tokens
+const generateAccessToken = (user) => 
+  jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
+
+const generateRefreshToken = (user) => 
+  jwt.sign({ userId: user.id }, REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRATION });
 
 // Register User
 exports.register = async (req, res) => {
@@ -17,7 +25,7 @@ exports.register = async (req, res) => {
     if (password.length < 8) return res.status(400).json({ error: "Password too short" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await prisma.user.create({
+    await prisma.user.create({
       data: { email: email.toLowerCase(), password: hashedPassword, isAdmin }
     });
 
@@ -27,7 +35,7 @@ exports.register = async (req, res) => {
   }
 };
 
-// Login User & Issue Tokens
+// Login User
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -38,54 +46,37 @@ exports.login = async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) return res.status(401).json({ error: "Invalid credentials" });
 
-    const token = jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET, { expiresIn: "1d" });
-    const refreshToken = jwt.sign({ userId: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
-    // Store refreshToken in database
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { refreshToken }
+    res.cookie("refreshToken", refreshToken, { 
+      httpOnly: true, 
+      secure: process.env.NODE_ENV === "production", 
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
-    return res.status(200).json({ token, refreshToken, isAdmin: user.isAdmin });
+    return res.status(200).json({ accessToken, isAdmin: user.isAdmin });
   } catch (error) {
     return res.status(500).json({ error: "Server error" });
   }
 };
 
-
-
-// Logout User & Invalidate Refresh Token
+// Logout User
 exports.logout = async (req, res) => {
-  const { refreshToken } = req.body;
-
-  // Invalidate the refresh token in the database (optional)
-  if (refreshToken) {
-    await prisma.user.updateMany({
-      where: { refreshToken },
-      data: { refreshToken: null }
-    });
-  }
-
-  res.clearCookie("authToken").status(200).json({ message: "Logged out successfully" });
+  res.clearCookie("refreshToken");
+  return res.status(200).json({ message: "Logged out successfully" });
 };
 
-// Refresh Access Token using Refresh Token
-exports.refreshToken = async (req, res) => {
-  const { refreshToken } = req.body;
+// Refresh Token
+exports.refreshToken = (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) return res.status(401).json({ error: "Unauthorized" });
 
-  if (!refreshToken) return res.status(401).json({ error: "Refresh token required" });
+  jwt.verify(refreshToken, REFRESH_SECRET, (err, decoded) => {
+    if (err) return res.status(403).json({ error: "Invalid refresh token" });
 
-  try {
-    const decoded = jwt.verify(refreshToken, JWT_SECRET);
-    const newAccessToken = jwt.sign(
-      { userId: decoded.userId, isAdmin: decoded.isAdmin },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRATION }
-    );
-
-    res.json({ token: newAccessToken });
-  } catch (error) {
-    return res.status(403).json({ error: "Invalid refresh token" });
-  }
+    const accessToken = generateAccessToken({ id: decoded.userId });
+    return res.json({ accessToken });
+  });
 };

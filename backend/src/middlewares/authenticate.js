@@ -6,39 +6,28 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "No token provided" });
+    return res.status(401).json({ error: "Unauthorized" });
   }
 
   const token = authHeader.split(" ")[1];
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, JWT_SECRET, async (err, decoded) => {
     if (err) return res.status(403).json({ error: "Invalid token" });
 
-    req.user = user; 
+    const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+    if (!user) return res.status(401).json({ error: "User not found" });
+
+    req.user = user;
     next();
   });
 };
 
 // Admin Authorization Middleware
-const isAdmin = async (req, res, next) => {
-  try {
-    if (!req.user || !req.user.userId) {
-      return res.status(401).json({ error: "User not authenticated" });
-    }
-
-    // Fetch user from the database using Prisma based on userId
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
-    });
-
-    if (!user || !user.isAdmin) {
-      return res.status(403).json({ error: "Access denied. Admins only." });
-    }
-
-    next();
-  } catch (err) {
-    return res.status(500).json({ error: "Internal server error" });
+const isAdmin = (req, res, next) => {
+  if (!req.user?.isAdmin) {
+    return res.status(403).json({ error: "Access denied. Admins only." });
   }
+  next();
 };
 
 module.exports = { authenticateToken, isAdmin };

@@ -11,7 +11,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const { setToken } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +31,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
 
     try {
       const payload = isRegistering
-        ? { name: name.trim(), email: email.toLowerCase().trim(), password } // Do not send `isAdmin`
+        ? { name: name.trim(), email: email.toLowerCase().trim(), password } 
         : { email: email.toLowerCase().trim(), password };
 
       const response = await axios.post(url, payload, {
@@ -39,11 +39,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
         withCredentials: true,
       });
 
-      if (isRegistering) {
-        alert("Registration successful! Please log in.");
-        navigate("/login");
-      } else if (response.data.token) {
-        setToken(response.data.token, response.data.isAdmin); // The `isAdmin` will come from the backend
+      if (!isRegistering && response.data.accessToken) {
+        login(response.data.accessToken, response.data.isAdmin); 
         navigate("/proverbs");
       }
     } catch (error: unknown) {
