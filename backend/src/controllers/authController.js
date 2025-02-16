@@ -4,7 +4,7 @@ const prisma = require("../../prisma/prismaClient");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const REFRESH_SECRET = process.env.REFRESH_SECRET;
-const JWT_EXPIRATION = "15m";  // Shorter expiration for security
+const JWT_EXPIRATION = "15m";  
 const REFRESH_TOKEN_EXPIRATION = "7d";
 
 // Generate Tokens

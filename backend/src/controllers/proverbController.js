@@ -49,10 +49,10 @@ exports.getRandomProverb = async (req, res) => {
       secondProverb = await prisma.proverb.findFirst({
         skip: Math.floor(Math.random() * proverbCount),
       });
-    } while (firstProverb.id === secondProverb.id); // Ensure they're different
+    } while (firstProverb.id === secondProverb.id); 
 
     const transformedProverb = {
-      beginning: firstProverb.ending, // Swap positions
+      beginning: firstProverb.ending, 
       ending: secondProverb.beginning,
     };
 

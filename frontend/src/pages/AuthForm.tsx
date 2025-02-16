@@ -11,7 +11,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [isAdmin, setIsAdmin] = useState(false); // Admin state
+  const [isAdmin, setIsAdmin] = useState(false); 
   const { login } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
