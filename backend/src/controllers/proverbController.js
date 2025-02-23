@@ -52,8 +52,8 @@ exports.getRandomProverb = async (req, res) => {
     } while (firstProverb.id === secondProverb.id); 
 
     const transformedProverb = {
-      beginning: firstProverb.ending, 
-      ending: secondProverb.beginning,
+      beginning: firstProverb.beginning, 
+      ending: secondProverb.ending,
     };
 
     return res.status(200).json({
