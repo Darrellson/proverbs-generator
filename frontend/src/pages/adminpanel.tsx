@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from "react";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const VITE_API_URL = import.meta.env.VITE_API_URL;
+
 const AdminPanel: React.FC = () => {
-  const { token, isAdmin } = useAuth();
+  const { token, isAdmin, setAdminState } = useAuth();
   const navigate = useNavigate();
   const [proverbs, setProverbs] = useState<{ id: number; beginning: string; ending: string }[]>([]);
   const [newProverb, setNewProverb] = useState({ beginning: "", ending: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const VITE_API_URL = import.meta.env.VITE_API_URL;
+  const [adding, setAdding] = useState<boolean>(false);
+  const [deleting, setDeleting] = useState<number | null>(null);
 
   useEffect(() => {
     if (!token || !isAdmin) {
@@ -19,53 +22,76 @@ const AdminPanel: React.FC = () => {
       return;
     }
 
-    setLoading(true);
-
-    axios
-      .get(`${VITE_API_URL}/proverbs`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
+    const fetchProverbs = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(`${VITE_API_URL}/proverbs`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setProverbs(res.data);
         setError(null);
-      })
-      .catch(() => {
-        setError("Error fetching proverbs.");
-      })
-      .finally(() => setLoading(false));
-  }, [token, isAdmin, navigate, VITE_API_URL]);
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 401) {
+            await setAdminState();
+          } else {
+            setError("Error fetching proverbs.");
+          }
+        } else {
+          setError("An unexpected error occurred.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleDelete = (id: number) => {
+    fetchProverbs();
+  }, [token, isAdmin, navigate]);
+
+  const handleDelete = async (id: number) => {
     if (!token) return;
+    const confirmDelete = window.confirm("Are you sure you want to delete this proverb?");
+    if (!confirmDelete) return;
 
-    axios
-      .delete(`${VITE_API_URL}/proverbs/${id}`, {
+    setDeleting(id);
+    try {
+      await axios.delete(`${VITE_API_URL}/proverbs/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
-      })
-      .then(() => {
-        setProverbs(proverbs.filter((proverb) => proverb.id !== id));
-      })
-      .catch((err) => {
-        console.error("Error deleting proverb:", err);
       });
+      setProverbs(proverbs.filter((proverb) => proverb.id !== id));
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error deleting proverb:", error);
+        alert("Failed to delete proverb. Try again.");
+      }
+    } finally {
+      setDeleting(null);
+    }
   };
 
-  const handleAddProverb = () => {
-    if (!newProverb.beginning || !newProverb.ending || !token) return;
+  const handleAddProverb = async () => {
+    if (!newProverb.beginning || !newProverb.ending || !token) {
+      alert("Please fill in both fields.");
+      return;
+    }
 
-    axios
-      .post(
+    setAdding(true);
+    try {
+      const res = await axios.post(
         `${VITE_API_URL}/proverbs`,
         { beginning: newProverb.beginning, ending: newProverb.ending },
         { headers: { Authorization: `Bearer ${token}` } }
-      )
-      .then((res) => {
-        setProverbs([...proverbs, res.data]);
-        setNewProverb({ beginning: "", ending: "" });
-      })
-      .catch((err) => {
-        console.error("Error adding proverb:", err);
-      });
+      );
+      setProverbs([...proverbs, res.data]);
+      setNewProverb({ beginning: "", ending: "" });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error adding proverb:", error);
+        alert("Failed to add proverb. Try again.");
+      }
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
@@ -80,10 +106,16 @@ const AdminPanel: React.FC = () => {
           <h4 className="text-center">Proverbs List</h4>
           <ul className="list-group">
             {proverbs.map((proverb) => (
-              <li key={proverb.id} className="list-group-item">
-                <strong>{proverb.beginning}</strong> - {proverb.ending}
-                <button onClick={() => handleDelete(proverb.id)} className="btn btn-danger btn-sm">
-                  Delete
+              <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
+                <span>
+                  <strong>{proverb.beginning}</strong> - {proverb.ending}
+                </span>
+                <button
+                  onClick={() => handleDelete(proverb.id)}
+                  className="btn btn-danger btn-sm"
+                  disabled={deleting === proverb.id}
+                >
+                  {deleting === proverb.id ? "Deleting..." : "Delete"}
                 </button>
               </li>
             ))}
@@ -108,8 +140,8 @@ const AdminPanel: React.FC = () => {
             value={newProverb.ending}
             onChange={(e) => setNewProverb({ ...newProverb, ending: e.target.value })}
           />
-          <button className="btn btn-primary" onClick={handleAddProverb}>
-            Add Proverb
+          <button className="btn btn-primary" onClick={handleAddProverb} disabled={adding}>
+            {adding ? "Adding..." : "Add Proverb"}
           </button>
         </div>
       </div>

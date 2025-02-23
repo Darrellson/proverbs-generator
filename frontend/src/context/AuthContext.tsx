@@ -1,5 +1,5 @@
-import React, { createContext, ReactNode, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import React, { createContext, ReactNode, useContext, useState } from "react";
 
 type AuthContextType = {
   token: string | null;
@@ -7,23 +7,14 @@ type AuthContextType = {
   login: (accessToken: string, isAdmin: boolean) => void;
   logout: () => void;
   refreshAccessToken: () => Promise<void>;
+  setAdminState: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
-  const [isAdmin, setIsAdmin] = useState<boolean>(JSON.parse(localStorage.getItem("isAdmin") || "false"));
-
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem("token", token);
-      localStorage.setItem("isAdmin", JSON.stringify(isAdmin));
-    } else {
-      localStorage.removeItem("token");
-      localStorage.removeItem("isAdmin");
-    }
-  }, [token, isAdmin]);
+  const [token, setToken] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   const login = (accessToken: string, admin: boolean) => {
     setToken(accessToken);
@@ -47,8 +38,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  // Set admin state by checking if the user is an admin from the backend
+  const setAdminState = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/auth/isAdmin`, {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true,
+      });
+      setIsAdmin(response.data.isAdmin);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        setIsAdmin(false);
+      }
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ token, isAdmin, login, logout, refreshAccessToken }}>
+    <AuthContext.Provider value={{ token, isAdmin, login, logout, refreshAccessToken, setAdminState }}>
       {children}
     </AuthContext.Provider>
   );
