@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 interface AuthFormProps {
@@ -17,13 +17,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ isRegistering }) => {
   const [loading, setLoading] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
-
-  // Redirect authenticated users
-  useEffect(() => {
-    if (localStorage.getItem("token")) {
-      navigate("/proverbs");
-    }
-  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

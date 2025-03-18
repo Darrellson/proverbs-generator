@@ -46,7 +46,7 @@ const AdminPanel: React.FC = () => {
     };
 
     fetchProverbs();
-  }, [token, isAdmin, navigate]);
+  }, [token, isAdmin]);
 
   const handleDelete = async (id: number) => {
     if (!token) return;
