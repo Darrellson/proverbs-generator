@@ -68,6 +68,7 @@ const AdminPanel: React.FC = () => {
       setDeleting(null);
     }
   };
+  
 
   const handleAddProverb = async () => {
     if (!newProverb.beginning || !newProverb.ending || !token) {
@@ -94,6 +95,10 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+  const handleClear = () => {
+    setNewProverb({ beginning: "", ending: "" });
+  };
+
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">Admin Panel</h2>
@@ -104,45 +109,54 @@ const AdminPanel: React.FC = () => {
       <div className="row mb-4">
         <div className="col-md-8 mx-auto">
           <h4 className="text-center">Proverbs List</h4>
-          <ul className="list-group">
-            {proverbs.map((proverb) => (
-              <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
-                <span>
-                  <strong>{proverb.beginning}</strong> - {proverb.ending}
-                </span>
-                <button
-                  onClick={() => handleDelete(proverb.id)}
-                  className="btn btn-danger btn-sm"
-                  disabled={deleting === proverb.id}
-                >
-                  {deleting === proverb.id ? "Deleting..." : "Delete"}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div style={{ maxHeight: "300px", overflowY: "auto" }}>
+            <ul className="list-group">
+              {proverbs.map((proverb) => (
+                <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
+                  <span>
+                    <strong>{proverb.beginning}</strong> - {proverb.ending}
+                  </span>
+                  <button
+                    onClick={() => handleDelete(proverb.id)}
+                    className="btn btn-danger btn-sm"
+                    disabled={deleting === proverb.id}
+                  >
+                    {deleting === proverb.id ? "Deleting..." : "Delete"}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 
       <div className="card">
         <div className="card-body">
           <h5 className="card-title text-center">Add New Proverb</h5>
-          <input
-            type="text"
-            className="form-control mb-2"
-            placeholder="Beginning of Proverb"
-            value={newProverb.beginning}
-            onChange={(e) => setNewProverb({ ...newProverb, beginning: e.target.value })}
-          />
-          <input
-            type="text"
-            className="form-control mb-2"
-            placeholder="Ending of Proverb"
-            value={newProverb.ending}
-            onChange={(e) => setNewProverb({ ...newProverb, ending: e.target.value })}
-          />
-          <button className="btn btn-primary" onClick={handleAddProverb} disabled={adding}>
-            {adding ? "Adding..." : "Add Proverb"}
-          </button>
+          <div className="d-flex gap-2 mb-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Beginning of Proverb"
+              value={newProverb.beginning}
+              onChange={(e) => setNewProverb({ ...newProverb, beginning: e.target.value })}
+            />
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Ending of Proverb"
+              value={newProverb.ending}
+              onChange={(e) => setNewProverb({ ...newProverb, ending: e.target.value })}
+            />
+          </div>
+          <div className="d-flex justify-content-center gap-2">
+            <button className="btn btn-primary" onClick={handleAddProverb} disabled={adding}>
+              {adding ? "Adding..." : "Add Proverb"}
+            </button>
+            <button className="btn btn-secondary" onClick={handleClear}>
+              Clear
+            </button>
+          </div>
         </div>
       </div>
     </div>
