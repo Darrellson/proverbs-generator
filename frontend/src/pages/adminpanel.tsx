@@ -16,6 +16,9 @@ const AdminPanel: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [adding, setAdding] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [file, setFile] = useState<File | null>(null);  // Track the selected file
+  const [fileError, setFileError] = useState<string | null>(null); // Error for invalid file upload
+  const [uploading, setUploading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!token || !isAdmin) {
@@ -131,6 +134,47 @@ const AdminPanel: React.FC = () => {
     setEditedProverb({ beginning: "", ending: "" });
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      if (selectedFile.type !== "application/json") {
+        setFileError("Please upload a valid JSON file.");
+        setFile(null); // Reset the file state if invalid file is selected
+      } else {
+        setFileError(null); // Clear the file error
+        setFile(selectedFile); // Set the selected file
+      }
+    }
+  };
+  
+  const handleFileUpload = async () => {
+    if (!file) {
+      setFileError("Please select a file to upload.");
+      return;
+    }
+  
+    setUploading(true);
+  
+    const formData = new FormData();
+    formData.append("file", file); // Ensure the key matches with the backend ('file')
+  
+    try {
+      const response = await axios.post(`${VITE_API_URL}/proverbs/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+  
+      alert(response.data.message);
+    } catch (error) {
+      console.error("Error uploading file:", error); // Log detailed error message
+      alert(`Error uploading file: ${error.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+  
   return (
     <div className="container mt-5">
       <h2 className="text-center mb-4">Admin Panel</h2>
@@ -138,6 +182,7 @@ const AdminPanel: React.FC = () => {
       {loading && <p className="text-center">Loading proverbs...</p>}
       {error && <p className="text-center text-danger">{error}</p>}
 
+      {/* Proverbs List */}
       <div className="row mb-4">
         <div className="col-md-8 mx-auto">
           <h4 className="text-center">Proverbs List</h4>
@@ -191,6 +236,21 @@ const AdminPanel: React.FC = () => {
         </div>
       </div>
 
+      {/* File Upload Section */}
+      <div className="card mt-4">
+        <div className="card-body">
+          <h5 className="card-title text-center">Upload Proverbs JSON File</h5>
+          <input type="file" accept=".json" onChange={handleFileChange} className="form-control mb-3" />
+          {fileError && <p className="text-danger">{fileError}</p>}
+          <div className="d-flex justify-content-center gap-2">
+            <button className="btn btn-primary" onClick={handleFileUpload} disabled={uploading}>
+              {uploading ? "Uploading..." : "Upload File"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Add New Proverb Section */}
       <div className="card mt-4">
         <div className="card-body">
           <h5 className="card-title text-center">Add New Proverb</h5>
