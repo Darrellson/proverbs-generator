@@ -9,8 +9,9 @@ const AdminPanel: React.FC = () => {
   const { token, isAdmin, setAdminState } = useAuth();
   const navigate = useNavigate();
   const [proverbs, setProverbs] = useState<{ id: number; beginning: string; ending: string }[]>([]);
-  const [newProverb, setNewProverb] = useState({ beginning: "", ending: "" });
-  const [editedProverb, setEditedProverb] = useState({ id: 0, beginning: "", ending: "" });
+  const [editedProverbId, setEditedProverbId] = useState<number | null>(null); // Track which proverb is being edited
+  const [editedProverb, setEditedProverb] = useState<{ beginning: string; ending: string }>({ beginning: "", ending: "" });
+  const [newProverb, setNewProverb] = useState<{ beginning: string; ending: string }>({ beginning: "", ending: "" }); // Define newProverb state
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [adding, setAdding] = useState<boolean>(false);
@@ -95,7 +96,15 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  const handleUpdate = async () => {
+  const handleEditProverb = (id: number) => {
+    const proverb = proverbs.find(p => p.id === id);
+    if (proverb) {
+      setEditedProverb({ beginning: proverb.beginning, ending: proverb.ending });
+      setEditedProverbId(id);
+    }
+  };
+
+  const handleUpdateProverb = async () => {
     if (!editedProverb.beginning || !editedProverb.ending || !token) {
       alert("Please fill in both fields.");
       return;
@@ -103,21 +112,23 @@ const AdminPanel: React.FC = () => {
 
     try {
       const res = await axios.put(
-        `${VITE_API_URL}/proverbs/${editedProverb.id}`,
+        `${VITE_API_URL}/proverbs/${editedProverbId}`,
         { beginning: editedProverb.beginning, ending: editedProverb.ending },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setProverbs(proverbs.map((p) => (p.id === editedProverb.id ? res.data : p)));
-      setEditedProverb({ id: 0, beginning: "", ending: "" });
+      setProverbs(proverbs.map((p) => (p.id === editedProverbId ? res.data : p)));
+      setEditedProverbId(null);  // Clear editing state
+      setEditedProverb({ beginning: "", ending: "" });
     } catch (error: unknown) {
       console.error("Error updating proverb:", error);
       alert("Failed to update proverb. Try again.");
     }
   };
 
-  const handleClear = () => {
-    setNewProverb({ beginning: "", ending: "" });
+  const handleCancelEdit = () => {
+    setEditedProverbId(null);  // Clear editing state
+    setEditedProverb({ beginning: "", ending: "" });
   };
 
   return (
@@ -134,60 +145,51 @@ const AdminPanel: React.FC = () => {
             <ul className="list-group">
               {proverbs.map((proverb) => (
                 <li key={proverb.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <span>
-                    <strong>{proverb.beginning}</strong> - {proverb.ending}
-                  </span>
-                  <button
-                    onClick={() => setEditedProverb(proverb)}
-                    className="btn btn-warning btn-sm"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(proverb.id)}
-                    className="btn btn-danger btn-sm"
-                    disabled={deleting === proverb.id}
-                  >
-                    {deleting === proverb.id ? "Deleting..." : "Delete"}
-                  </button>
+                  {editedProverbId === proverb.id ? (
+                    <div className="d-flex gap-2">
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editedProverb.beginning}
+                        onChange={(e) => setEditedProverb({ ...editedProverb, beginning: e.target.value })}
+                      />
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editedProverb.ending}
+                        onChange={(e) => setEditedProverb({ ...editedProverb, ending: e.target.value })}
+                      />
+                    </div>
+                  ) : (
+                    <span>
+                      <strong>{proverb.beginning}</strong> - {proverb.ending}
+                    </span>
+                  )}
+                  <div className="btn-group">
+                    {editedProverbId === proverb.id ? (
+                      <>
+                        <button className="btn btn-success btn-sm" onClick={handleUpdateProverb}>Save</button>
+                        <button className="btn btn-secondary btn-sm" onClick={handleCancelEdit}>Cancel</button>
+                      </>
+                    ) : (
+                      <>
+                        <button className="btn btn-warning btn-sm" onClick={() => handleEditProverb(proverb.id)}>Edit</button>
+                        <button
+                          onClick={() => handleDelete(proverb.id)}
+                          className="btn btn-danger btn-sm"
+                          disabled={deleting === proverb.id}
+                        >
+                          {deleting === proverb.id ? "Deleting..." : "Delete"}
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
           </div>
         </div>
       </div>
-
-      {editedProverb.id !== 0 && (
-        <div className="card mt-4">
-          <div className="card-body">
-            <h5 className="card-title text-center">Edit Proverb</h5>
-            <div className="d-flex gap-2 mb-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Beginning of Proverb"
-                value={editedProverb.beginning}
-                onChange={(e) => setEditedProverb({ ...editedProverb, beginning: e.target.value })}
-              />
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Ending of Proverb"
-                value={editedProverb.ending}
-                onChange={(e) => setEditedProverb({ ...editedProverb, ending: e.target.value })}
-              />
-            </div>
-            <div className="d-flex justify-content-center gap-2">
-              <button className="btn btn-primary" onClick={handleUpdate}>
-                Update Proverb
-              </button>
-              <button className="btn btn-secondary" onClick={() => setEditedProverb({ id: 0, beginning: "", ending: "" })}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="card mt-4">
         <div className="card-body">
@@ -212,7 +214,7 @@ const AdminPanel: React.FC = () => {
             <button className="btn btn-primary" onClick={handleAddProverb} disabled={adding}>
               {adding ? "Adding..." : "Add Proverb"}
             </button>
-            <button className="btn btn-secondary" onClick={handleClear}>
+            <button className="btn btn-secondary" onClick={() => setNewProverb({ beginning: "", ending: "" })}>
               Clear
             </button>
           </div>
