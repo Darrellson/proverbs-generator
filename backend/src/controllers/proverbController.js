@@ -39,7 +39,6 @@ exports.getRandomProverb = async (req, res) => {
       return res.status(404).json({ error: "Not enough proverbs available." });
     }
 
-    // Fetch two random proverbs
     let firstProverb, secondProverb;
     do {
       firstProverb = await prisma.proverb.findFirst({
@@ -49,10 +48,10 @@ exports.getRandomProverb = async (req, res) => {
       secondProverb = await prisma.proverb.findFirst({
         skip: Math.floor(Math.random() * proverbCount),
       });
-    } while (firstProverb.id === secondProverb.id); 
+    } while (firstProverb.id === secondProverb.id);
 
     const transformedProverb = {
-      beginning: firstProverb.beginning, 
+      beginning: firstProverb.beginning,
       ending: secondProverb.ending,
     };
 
@@ -64,9 +63,6 @@ exports.getRandomProverb = async (req, res) => {
     return res.status(500).json({ error: "Error fetching proverb." });
   }
 };
-
-
-
 
 exports.getProverbs = async (req, res) => {
   try {
@@ -97,5 +93,26 @@ exports.deleteProverb = async (req, res) => {
   } catch (error) {
     console.error("Error deleting proverb:", error.message);
     return res.status(500).json({ error: "Error deleting proverb" });
+  }
+};
+
+exports.updateProverb = async (req, res) => {
+  const { id } = req.params;
+  const { beginning, ending } = req.body;
+
+  if (typeof beginning !== "string" || typeof ending !== "string") {
+    return res.status(400).json({ error: "Beginning and ending must be strings." });
+  }
+
+  try {
+    const updatedProverb = await prisma.proverb.update({
+      where: { id: parseInt(id) },
+      data: { beginning, ending },
+    });
+
+    return res.status(200).json(updatedProverb);
+  } catch (error) {
+    console.error("Error updating proverb:", error.message);
+    return res.status(500).json({ error: "Error updating proverb" });
   }
 };

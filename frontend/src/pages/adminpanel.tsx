@@ -10,6 +10,7 @@ const AdminPanel: React.FC = () => {
   const navigate = useNavigate();
   const [proverbs, setProverbs] = useState<{ id: number; beginning: string; ending: string }[]>([]);
   const [newProverb, setNewProverb] = useState({ beginning: "", ending: "" });
+  const [editedProverb, setEditedProverb] = useState({ id: 0, beginning: "", ending: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [adding, setAdding] = useState<boolean>(false);
@@ -68,7 +69,6 @@ const AdminPanel: React.FC = () => {
       setDeleting(null);
     }
   };
-  
 
   const handleAddProverb = async () => {
     if (!newProverb.beginning || !newProverb.ending || !token) {
@@ -95,6 +95,27 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+  const handleUpdate = async () => {
+    if (!editedProverb.beginning || !editedProverb.ending || !token) {
+      alert("Please fill in both fields.");
+      return;
+    }
+
+    try {
+      const res = await axios.put(
+        `${VITE_API_URL}/proverbs/${editedProverb.id}`,
+        { beginning: editedProverb.beginning, ending: editedProverb.ending },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setProverbs(proverbs.map((p) => (p.id === editedProverb.id ? res.data : p)));
+      setEditedProverb({ id: 0, beginning: "", ending: "" });
+    } catch (error: unknown) {
+      console.error("Error updating proverb:", error);
+      alert("Failed to update proverb. Try again.");
+    }
+  };
+
   const handleClear = () => {
     setNewProverb({ beginning: "", ending: "" });
   };
@@ -117,6 +138,12 @@ const AdminPanel: React.FC = () => {
                     <strong>{proverb.beginning}</strong> - {proverb.ending}
                   </span>
                   <button
+                    onClick={() => setEditedProverb(proverb)}
+                    className="btn btn-warning btn-sm"
+                  >
+                    Edit
+                  </button>
+                  <button
                     onClick={() => handleDelete(proverb.id)}
                     className="btn btn-danger btn-sm"
                     disabled={deleting === proverb.id}
@@ -130,7 +157,39 @@ const AdminPanel: React.FC = () => {
         </div>
       </div>
 
-      <div className="card">
+      {editedProverb.id !== 0 && (
+        <div className="card mt-4">
+          <div className="card-body">
+            <h5 className="card-title text-center">Edit Proverb</h5>
+            <div className="d-flex gap-2 mb-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Beginning of Proverb"
+                value={editedProverb.beginning}
+                onChange={(e) => setEditedProverb({ ...editedProverb, beginning: e.target.value })}
+              />
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Ending of Proverb"
+                value={editedProverb.ending}
+                onChange={(e) => setEditedProverb({ ...editedProverb, ending: e.target.value })}
+              />
+            </div>
+            <div className="d-flex justify-content-center gap-2">
+              <button className="btn btn-primary" onClick={handleUpdate}>
+                Update Proverb
+              </button>
+              <button className="btn btn-secondary" onClick={() => setEditedProverb({ id: 0, beginning: "", ending: "" })}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="card mt-4">
         <div className="card-body">
           <h5 className="card-title text-center">Add New Proverb</h5>
           <div className="d-flex gap-2 mb-3">
