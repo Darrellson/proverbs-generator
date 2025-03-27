@@ -9,16 +9,39 @@ const AdminPanel: React.FC = () => {
   const { token, isAdmin, setAdminState } = useAuth();
   const navigate = useNavigate();
   const [proverbs, setProverbs] = useState<{ id: number; beginning: string; ending: string }[]>([]);
-  const [editedProverbId, setEditedProverbId] = useState<number | null>(null); // Track which proverb is being edited
+  const [editedProverbId, setEditedProverbId] = useState<number | null>(null);
   const [editedProverb, setEditedProverb] = useState<{ beginning: string; ending: string }>({ beginning: "", ending: "" });
-  const [newProverb, setNewProverb] = useState<{ beginning: string; ending: string }>({ beginning: "", ending: "" }); // Define newProverb state
+  const [newProverb, setNewProverb] = useState<{ beginning: string; ending: string }>({ beginning: "", ending: "" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [adding, setAdding] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<number | null>(null);
-  const [file, setFile] = useState<File | null>(null);  // Track the selected file
-  const [fileError, setFileError] = useState<string | null>(null); // Error for invalid file upload
+  const [file, setFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [uploading, setUploading] = useState<boolean>(false);
+
+  const fetchProverbs = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${VITE_API_URL}/proverbs`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProverbs(res.data);
+      setError(null);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          await setAdminState();
+        } else {
+          setError("Error fetching proverbs.");
+        }
+      } else {
+        setError("An unexpected error occurred.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!token || !isAdmin) {
@@ -26,37 +49,12 @@ const AdminPanel: React.FC = () => {
       navigate("/login");
       return;
     }
-
-    const fetchProverbs = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(`${VITE_API_URL}/proverbs`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProverbs(res.data);
-        setError(null);
-      } catch (error: unknown) {
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status === 401) {
-            await setAdminState();
-          } else {
-            setError("Error fetching proverbs.");
-          }
-        } else {
-          setError("An unexpected error occurred.");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchProverbs();
   }, [token, isAdmin]);
 
   const handleDelete = async (id: number) => {
     if (!token) return;
-    const confirmDelete = window.confirm("Are you sure you want to delete this proverb?");
-    if (!confirmDelete) return;
+    if (!window.confirm("Are you sure you want to delete this proverb?")) return;
 
     setDeleting(id);
     try {
@@ -64,11 +62,9 @@ const AdminPanel: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProverbs(proverbs.filter((proverb) => proverb.id !== id));
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error deleting proverb:", error);
-        alert("Failed to delete proverb. Try again.");
-      }
+    } catch (error) {
+      console.error("Error deleting proverb:", error);
+      alert("Failed to delete proverb. Try again.");
     } finally {
       setDeleting(null);
     }
@@ -82,25 +78,21 @@ const AdminPanel: React.FC = () => {
 
     setAdding(true);
     try {
-      const res = await axios.post(
-        `${VITE_API_URL}/proverbs`,
-        { beginning: newProverb.beginning, ending: newProverb.ending },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axios.post(`${VITE_API_URL}/proverbs`, newProverb, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setProverbs([...proverbs, res.data]);
       setNewProverb({ beginning: "", ending: "" });
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error adding proverb:", error);
-        alert("Failed to add proverb. Try again.");
-      }
+    } catch (error) {
+      console.error("Error adding proverb:", error);
+      alert("Failed to add proverb. Try again.");
     } finally {
       setAdding(false);
     }
   };
 
   const handleEditProverb = (id: number) => {
-    const proverb = proverbs.find(p => p.id === id);
+    const proverb = proverbs.find((p) => p.id === id);
     if (proverb) {
       setEditedProverb({ beginning: proverb.beginning, ending: proverb.ending });
       setEditedProverbId(id);
@@ -114,50 +106,47 @@ const AdminPanel: React.FC = () => {
     }
 
     try {
-      const res = await axios.put(
-        `${VITE_API_URL}/proverbs/${editedProverbId}`,
-        { beginning: editedProverb.beginning, ending: editedProverb.ending },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const res = await axios.put(`${VITE_API_URL}/proverbs/${editedProverbId}`, editedProverb, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       setProverbs(proverbs.map((p) => (p.id === editedProverbId ? res.data : p)));
-      setEditedProverbId(null);  // Clear editing state
+      setEditedProverbId(null);
       setEditedProverb({ beginning: "", ending: "" });
-    } catch (error: unknown) {
+    } catch (error) {
       console.error("Error updating proverb:", error);
       alert("Failed to update proverb. Try again.");
     }
   };
 
   const handleCancelEdit = () => {
-    setEditedProverbId(null);  // Clear editing state
+    setEditedProverbId(null);
     setEditedProverb({ beginning: "", ending: "" });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e.target.files?.[0]) {
       const selectedFile = e.target.files[0];
       if (selectedFile.type !== "application/json") {
         setFileError("Please upload a valid JSON file.");
-        setFile(null); // Reset the file state if invalid file is selected
+        setFile(null);
       } else {
-        setFileError(null); // Clear the file error
-        setFile(selectedFile); // Set the selected file
+        setFileError(null);
+        setFile(selectedFile);
       }
     }
   };
-  
+
   const handleFileUpload = async () => {
     if (!file) {
       setFileError("Please select a file to upload.");
       return;
     }
-  
+
     setUploading(true);
-  
     const formData = new FormData();
-    formData.append("file", file); // Ensure the key matches with the backend ('file')
-  
+    formData.append("file", file);
+
     try {
       const response = await axios.post(`${VITE_API_URL}/proverbs/upload`, formData, {
         headers: {
@@ -165,10 +154,11 @@ const AdminPanel: React.FC = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-  
+
       alert(response.data.message);
+      fetchProverbs(); // Fetch updated proverbs after upload
     } catch (error) {
-      console.error("Error uploading file:", error); // Log detailed error message
+      console.error("Error uploading file:", error);
       alert(`Error uploading file: ${error.message}`);
     } finally {
       setUploading(false);
